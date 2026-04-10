@@ -1,0 +1,55 @@
+name: Build APK
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            git zip unzip wget \
+            openjdk-17-jdk \
+            autoconf libtool \
+            pkg-config \
+            libffi-dev libssl-dev \
+            libltdl-dev cmake ninja-build \
+            libgdbm-dev libdb5.3-dev \
+            libbz2-dev libreadline-dev \
+            libsqlite3-dev liblzma-dev
+          pip install --upgrade pip setuptools
+          pip install buildozer==1.5.0 cython==0.29.33
+
+      - name: Cache buildozer
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.buildozer
+            ~/.gradle
+          key: buildozer-v2-${{ hashFiles('buildozer.spec') }}
+          restore-keys: buildozer-v2-
+
+      - name: Build APK
+        run: |
+          yes | buildozer android debug
+
+      - name: List bin folder
+        run: ls -la bin/ || echo "No bin folder found"
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: TurboEngine-APK
+          path: bin/*.apk
+          if-no-files-found: warn
+          retention-days: 7
