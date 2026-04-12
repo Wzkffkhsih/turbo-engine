@@ -45,8 +45,8 @@ except ImportError:
     REQUESTS_OK = False
 
 try:
-        import kivy  # noqa: F401
-        KIVY_AVAILABLE = True
+    import kivy  # noqa: F401
+    KIVY_AVAILABLE = True
 except ImportError:
     KIVY_AVAILABLE = False
 
